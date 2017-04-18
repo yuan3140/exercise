@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="UTF-8">
+        <title>手风琴布局</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+			.accordion-item-toggle {
+				display: flex;
+				padding: 10px;
+				background: #2e96f3;
+				color: #fff;
+				cursor: pointer;
+				justify-content: center;
+				align-items: center;
+			}
+			.accordion-item-content {
+				position: relative;
+				overflow: hidden;
+				height: 0;
+				font-size: 14px;
+				transition-duration: 300ms;
+				transform: translate3d(0, 0, 0);
+			}
+			.accordion-item-content div {
+				padding: 10px;
+				border: 1px solid #d9d9d9;
+				border-top: none;
+			}
+			.accordion-item {
+				width: 200px;
+				margin: 20px;
+			}
+			.accordion-list {
+				float: left;
+			}
+			.accordion-list .accordion-item {
+				margin: 0;
+			}
+			.accordion-list .accordion-item-toggle {
+				border-bottom: 1px solid rgba(255, 255, 255, .3)
+			}
+			.accordion-item-expand > .accordion-item-content {
+				height: auto;
+			}
+		</style>
+</head>
+<body>
+        <div style="float:left">
+			<div class="accordion-item">
+				<div class="accordion-item-toggle">标题</div>
+				<div class="accordion-item-content"><div>手风琴特效，当然也可以叫做侧栏菜单导航，集中了当今比较流行的竖向菜单导航， 既可以控制只展开一个，亦可以点击展开或者折叠</div></div>
+			</div>
+			<div class="accordion-item">
+				<div class="accordion-item-toggle">标题</div>
+				<div class="accordion-item-content"><div>手风琴特效，当然也可以叫做侧栏菜单导航，集中了当今比较流行的竖向菜单导航， 既可以控制只展开一个，亦可以点击展开或者折叠</div></div>
+			</div>
+		</div>
+	<div class="accordion-list">
+			<div class="accordion-item accordion-item-expand">
+				<div class="accordion-item-toggle">标题</div>
+				<div class="accordion-item-content"><div>手风琴特效，当然也可以叫做侧栏菜单导航，集中了当今比较流行的竖向菜单导航， 既可以控制只展开一个，亦可以点击展开或者折叠</div></div>
+			</div>
+			<div class="accordion-item">
+				<div class="accordion-item-toggle">标题</div>
+				<div class="accordion-item-content"><div>手风琴特效，当然也可以叫做侧栏菜单导航，集中了当今比较流行的竖向菜单导航， 既可以控制只展开一个，亦可以点击展开或者折叠</div></div>
+			</div>
+			<div class="accordion-item">
+				<div class="accordion-item-toggle">标题</div>
+				<div class="accordion-item-content"><div>手风琴特效，当然也可以叫做侧栏菜单导航，集中了当今比较流行的竖向菜单导航， 既可以控制只展开一个，亦可以点击展开或者折叠</div></div>
+			</div>
+			<div class="accordion-item">
+				<div class="accordion-item-toggle">标题</div>
+				<div class="accordion-item-content"><div>手风琴特效，当然也可以叫做侧栏菜单导航，集中了当今比较流行的竖向菜单导航， 既可以控制只展开一个，亦可以点击展开或者折叠</div></div>
+			</div>
+	</div>
+		<script>
+			+ function() {
+					console.log('The immediately function in...');
+					var collpase = document.querySelectorAll('.accordion-item-toggle');
+					
+					var addEvent = function(dom, type, handler, capture) {
+							if(dom.addEventListener) {
+								dom.addEventListener(type, handler, capture);
+							} else {
+								dom.addEvent('on' + type, handler);
+							}
+					}
+
+					var accordionCollpase = {
+						open: function(item) {
+							var content = item.querySelector('.accordion-item-content');
+							content.style.height = content.scrollHeight + 'px';
+							item.classList.add('accordion-item-expand');
+						},
+						close: function(item) {
+							var content = item.querySelector('.accordion-item-content');
+							content.style.height = '0px';
+							item.classList.remove('accordion-item-expand');
+						}
+					}
+					
+					for(var i = 0, len = collpase.length; i < len; i++) {
+						addEvent(collpase[i], 'click', function() {
+							console.log('accordion-item-toggle clicked');
+							var parentNode = this.parentNode;
+							var pParentNode = parentNode.parentNode;
+							if(pParentNode.classList.contains('accordion-list')) {
+								var expand = pParentNode.querySelector('.accordion-item-expand');
+								accordionCollpase.close(expand);
+							}
+							if(parentNode.classList.contains('accordion-item-expand')) {
+								accordionCollpase.close(parentNode);
+							} else {
+									accordionCollpase.open(parentNode);
+							}
+						});
+					}
+			}();
+		</script>
+</body>
+</html>

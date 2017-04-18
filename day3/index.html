@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>CSS Variable</title>
+	<style>
+
+		:root{
+			--spacing: 10px;
+			--blur: 10px;
+			--base: #ffc600;
+		}
+
+		html {
+			background: #193549;
+			font-size: 50px;
+			font-weight: 100;
+			font-family: 'helvetica neue', sans-serif;
+			color: #fff;
+		}
+
+		body {
+			text-align: center;
+		}
+
+		img {
+			padding: var(--spacing);
+			background: var(--base);
+			filter: blur(var(--blur));
+		}
+
+		.controls {
+			margin-bottom: 20px;
+		}
+
+	</style>
+</head>
+<body>
+	<h2>Update css Variables with JS</h2>
+	<div class="controls">
+		<label for="spacing">Spacing:</label>
+		<input type="range" min="10" max="200" name="spacing" value="10" data-sizing="px">
+
+		<label for="blur">Blur</label>
+		<input type="range" name="blur" min="0" max="25" value="10" data-sizing="px">
+
+		<label for="color">BaseColor</label>
+		<input type="color" name="base" value="#ffc600">
+	</div>
+	<img src="https://source.unsplash.com/7bwQXzbF6KE/800x500" alt="">
+
+	<script>
+		var inputs = document.querySelectorAll('.controls input');
+		function update() {
+			const suffix = this.dataset.sizing || '';
+			document.documentElement.style.setProperty(`--${this.name}`, this.value + suffix); // 写自定义属性
+			// 读取自定义属性
+			const rootStyle = getComputedStyle(document.documentElement);
+			const padding = rootStyle.getPropertyValue('--blur');
+			const color = rootStyle.getPropertyValue('--base');
+			const spacing = rootStyle.getPropertyValue('--spacing');
+			//console.log('>>>padding: ' + padding + ' base: ' + color + ' spacing:' + spacing);
+		}
+		inputs.forEach(input => {
+			input.addEventListener('change', update);
+			input.addEventListener('mousemove', update);
+		});
+
+	</script>
+</body>
+</html>

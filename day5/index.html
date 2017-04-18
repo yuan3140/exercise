@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Search Place</title>
+	<style type="text/css" media="screen">
+		html {
+			box-sizing: border-box;
+			background: #ffc600;
+			font-family: "helvetica neue";
+			font-size: 20px;
+			font-weight: 200;
+		}
+
+		*, *:before, *:after {
+			box-sizing: inherit;
+		}
+
+		.search-form {
+			max-width: 400px;
+			margin: 50px auto;
+		}
+
+		input {
+			width: 100%;
+			padding: 20px;
+		}
+
+		input.search {
+			margin: 0;
+			text-align: center;
+			outline: 0;
+			border: 10px solid #f7f7f7;
+			border-radius: 5px;
+			width: 120%;
+			left: -10%;
+			position: relative;
+			top: 10px;
+			font-size: 40px;
+			box-shadow: 0 0 5px rgba(0, 0, 0, .12), inset 0 0 2px rgba(0, 0, 0, .19);
+		}
+
+		.suggestions {
+			margin: 0;
+			padding: 0;
+			position: relative;
+		}
+
+		.suggestions li {
+			background: white;
+			list-style: none;
+			border-bottom: 1px solid #D8D8D8;
+			box-shadow: 0 0 10px rgba(0, 0, 0, .14);
+			margin: 0;
+			padding: 20px;
+			transition: background .2s;
+			display: flex;
+			justify-content: space-between;
+			text-transform: capitalize;
+		}
+
+		.suggestions li:nth-child(even) {
+			transform: perspective(100px) rotateX(3deg) translateY(2px) scale(1.001);
+			background: linear-gradient(to bottom, #FFFFFF 0%, #EFEFEF 100%);
+		}
+		.suggestions li:nth-child(odd) {
+			transform: perspective(100px) rotateX(-3deg) translateY(3px); 
+		}
+	</style>
+</head>
+<body>
+	<form class="search-form">
+		<input class="search" type="text" placeHolder="City or State">
+		<ul class="suggestions">
+			<li>Filter for a city</li>
+			<li>or a State</li>
+		</ul>
+	</form>
+	<script>
+		const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+	</script>
+</body>
+</html>

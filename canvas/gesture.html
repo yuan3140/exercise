@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>guesture</title>
+</head>
+
+<body>
+    <div class="code"></div>
+    <script>
+    (function() {
+        var TouchLock = function(container, params) {
+            'use strict';
+
+            var n = this;
+            if (!this instanceof TouchLock) {
+                return new TouchLock(container, params);
+            }
+
+            var defaults = {
+                width: 300,
+                height: 300,
+                grid: {
+                    rows: 3,
+                    cols: 3
+                }
+            };
+            n.container = typeof container === 'string' ? document.querySelector(container) : container;
+
+           	for(var def in defaults) {
+           		if(typeof params[def] === 'undefined') {
+           			params[def] = defaults[def]; 
+           		} else if(typeof params[def] === 'object') {
+           			for(var depdef in defaults[def]) {
+           				if(typeof params[def][depdef] === 'undefined') {
+           					params[def][depdef] = defaults[def][depdef];
+           				}
+           			}
+           		}
+           	}
+
+           	// 绑定事件的封装
+           	window.tool = {};
+           	window.tool.captureMT = function(element, onmousedown, onmousemove, onmouseup) {
+
+           		// 获取鼠标相对于元素的位置
+           		function getPoint(event) {
+           			var event = event || window.event;
+           			var x = event.pageX - element.offsetLeft;
+           			var y = event.pageY - element.offsetTop;
+
+           			return {
+           				x: x,
+           				y: y
+           			};
+           		}
+
+           		if(!element) return;
+           		element.addEventListener('mousedown', function(e) {
+           			e.point = getPoint(e);
+           			onmousedown && onmousedown.call(this, e);
+           		});
+
+           		element.addEventListener('mousemove', function(e) {
+           			e.point = getPoint(e);
+           			onmousemove && onmousemove.call(this, e);
+           		});
+
+           		element.addEventListener('mouseup', function(e) {
+           			e.point = getPoint(e);
+           			onmouseup && onmouseup.call(this, e);
+           		})
+           	}
+           	n.params = params;
+           	var width = n.params.width;
+           	var height = n.params.height;
+           	n.container.style.width = width + 'px';
+           	n.container.style.height = height + 'px';
+           	var lines = [];
+           	n.isPressed = false;
+           	var moveXY = {};
+
+           	var canvas = document.createElement('canvas');
+           	canvas.width = width;
+           	canvas.height = height;
+           	var ctx = canvas.getContext('2d');
+           	n.container.appendChild(canvas);
+
+           	function Item(x, y, r) {
+           		this.x = x;
+           		this.y = y;
+           		this.r = r;
+           		this.theme = 0;
+           	}
+           var items = [];
+           	n.drawBg = function() {
+           		ctx.fillStyle = '#ddd';
+           		ctx.fillRect(0, 0, width, height);
+           	};
+           	n.drawItem = function(item) {
+           		switch(item.theme) {
+           			case 0:
+           			ctx.beginPath();
+           			ctx.strokeStyle = '#fff';
+           			ctx.arc(item.x, item.y, item.r, 0, Math.PI * 2, true);
+           			ctx.stroke();
+           			ctx.closePath();
+           			break;
+           			case 1:
+           			n.drawMoveItem(item, 'rgba(0, 154, 97, 1)', 'rgba(255, 255, 255, 0.6)');
+           			break;
+           		}          		
+           	};
+
+           	n.drawMoveItem = function(item, c1, c2) {
+           		ctx.beginPath();
+           		ctx.fillStyle = c2;
+           		ctx.arc(item.x, item.y, item.r, 0, Math.PI * 2);
+           		ctx.fill();
+           		ctx.closePath();
+
+           		ctx.beginPath();
+           		ctx.fillStyle = c1;
+           		ctx.arc(item.x, item.y, item.r * .3, 0, Math.PI * 2);
+           		ctx.fill();
+           		ctx.closePath();
+
+           		ctx.beginPath();
+           		ctx.strokeStyle = c1;
+           		ctx.arc(item.x, item.y, item.r, 0, Math.PI * 2);
+           		ctx.stroke();
+           		ctx.closePath();
+           	}
+
+           	n.drawLine = function() {
+           		if(lines.length > 0){
+           			ctx.save();
+           			ctx.beginPath();
+           			ctx.strokeStyle = "rgba(0, 154, 97, 1)";
+           			ctx.strokeWidth = 4;
+           			for(var i = 0; i < lines.length; i++) {
+           				if(i == 0) {
+           					ctx.moveTo(lines[i].x, lines[i].y);
+           				}
+           				lines[i + 1] && ctx.lineTo(lines[i + 1].x, lines[i + 1].y);
+           				
+           			}
+           			moveXY && ctx.lineTo(moveXY.x, moveXY.y);
+           			ctx.stroke();
+           			ctx.closePath();
+           			ctx.restore();
+           		}
+           	}
+
+           	// 判断鼠标是否在圆圈内
+           	n.isIncircle = function(item, x, y) {
+           		var dx = x - item.x;
+           		var dy = y - item.y;
+           		var dd = Math.sqrt(dx * dx + dy * dy);
+           		return dd < item.r;
+           	};
+           	
+           	n.pageInit = function() {
+           		
+           		var c = n.params.grid.cols;
+           		var r = n.params.grid.rows;
+           		var w = Math.floor(width / c);
+           		var h = Math.floor(height / r);
+
+           		for(var i = 0; i < r * c; i++) {
+           			var x = Math.floor(w / 2) + (i % c) * w;
+           			var y = Math.floor(h / 2) + Math.floor(i / c) * h;
+           			var r = Math.floor(w / 2 * 0.6);
+           			var item = new Item(x, y, r);
+           			item.i = i;
+           			items.push(item);
+           		}
+           		n.eventInit();
+           		n.animate();
+           	};
+
+           	n.eventInit = function() {
+           		function check(e) {
+           			items.forEach(function(item) {
+           				if(item.theme != 1 && n.isIncircle(item, e.point.x, e.point.y)) {
+           					item.theme = 1;
+           					lines.push(item);
+           				}
+           			})
+           		}
+
+           		function onmousedown(e) {
+           			n.isPressed = true;
+           			check(e);
+           		}
+
+           		function onmousemove(e) {
+           			if(n.isPressed) {
+           				check(e);
+           				moveXY = {
+           					x: e.point.x,
+           					y: e.point.y
+           				}
+           			}
+           			
+           		}
+
+           		function onmouseup(e) {
+           			n.isPressed = false;
+           			check(e);
+           			moveXY = {};
+           		}
+           		tool.captureMT(canvas, onmousedown, onmousemove, onmouseup);
+           	};
+
+           	n.animate = function() {
+           		n.drawBg();
+           		items.forEach(function(v) {
+           			n.drawItem(v);
+           		});
+           		n.drawLine();
+           		requestAnimationFrame(n.animate);
+           	};
+
+           	n.pageInit();	
+        };
+        window.TouchLock = TouchLock;
+    }());
+    var code = new TouchLock('.code', {
+    });
+    </script>
+</body>
+
+</html>

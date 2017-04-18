@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="UTF-8">
+        <title>粒子动画</title>
+</head>
+<body>
+        <canvas id="particles"></canvas>
+		<script>
+			// 获取canvas元素
+	+ function() {
+			window.Particle = function() {
+				var p = this;
+				p.canvas = document.getElementById("particles");
+				p.ctx = p.canvas.getContext('2d');
+				p.points = [];
+				p.params = {
+					points: 300,
+					minDis: 100,
+					mouseDis: 200,
+					pageXY: {pageX: window.innerWidth/2, pageY: window.innerHeight/2}
+				}
+				p.init = function () {
+					p.width = window.innerWidth;
+					p.height = window.innerHeight;
+					p.canvas.width = p.width;
+					p.canvas.height = p.height;
+					p.drawBackground();
+					p.initDrawPoint();
+					p.addOverlap();
+					p.animation();
+					p.mouseEvent();
+				}
+				p.drawBackground = function drawBackground() {
+					p.ctx.fillStyle = '#000';
+					p.ctx.fillRect(0, 0, p.width, p.height);
+				}
+				p.addOverlap = function() {
+					p.overlap = document.createElement('div');
+            		p.overlap.style.width = p.width + 'px';
+					p.overlap.style.height = p.height + 'px';
+					p.overlap.style.position = 'absolute';
+					p.overlap.style.top = '0px';
+					p.overlap.style.left = '0px';
+					p.overlap.style.zIndex = '100';
+					if(p.canvas.nextElementSibling) {
+						p.canvas.parentNode.insertBefore(p.overlap, p.canvas.nextElementSibling);
+					} else {
+						p.canvas.parentNode.appendChild(p.overlap);
+					}
+
+				}
+				p.random = function(max, min) {
+					min = min || 0;
+					return Math.floor(Math.random() * (max - min + 1) + min)
+				}
+				p.color = function() {
+					function random() {
+						return Math.round(Math.random() * 255);
+					}
+					this.r = random();
+					this.g = random();
+					this.b = random();
+					this.a = p.random(1, 0.8);
+					this.rgba = 'rgba(' + this.r + ',' + this.g + ',' + this.b + ',' + this.a + ')';
+					return this;
+				}
+				p.point = function() {
+					this.color = new p.color();
+					this.x = Math.random() * p.width;
+					this.y = Math.random() * p.height;
+					this.vx = p.random(10, -10) / 40;
+					this.vy = p.random(10, -10) / 40;
+					this.r = p.random(3, 1);
+					this.scale = 1;
+				}
+				p.initDrawPoint = function() {
+					for(var i = 0; i < p.params.points; i++) {
+						var point = new p.point();
+						p.points.push(point);
+						p.ctx.beginPath();
+						p.ctx.fillStyle = point.color.rgba;
+						p.ctx.arc(point.x, point.y, point.r, 0, 2 * Math.PI, true);
+						p.ctx.fill();
+						p.ctx.closePath();
+					}
+				}
+				p.connect = function() {
+					function lineColor(p1, p2) {
+						var linear = p.ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+						linear.addColorStop(0, p1.color.rgba);
+						linear.addColorStop(1, p2.color.rgba);
+						return linear;
+					}
+					
+					for(var i = 0, len = p.points.length; i < len; i++) {
+						for(var j = 0; j < len; j++) {
+							p1 = p.points[i];
+							p2 = p.points[j];
+							if(Math.abs(p1.x - p2.x) < p.params.minDis && Math.abs(p2.y - p1.y) < p.params.minDis) {
+								p.ctx.beginPath();
+								p.ctx.lineWidth = 0.2;
+								p.ctx.strokeStyle = lineColor(p1, p2);
+								p.ctx.moveTo(p1.x, p1.y);
+								p.ctx.lineTo(p2.x, p2.y);
+								p.ctx.stroke();
+								p.ctx.closePath();
+							}
+						}
+					}
+				}
+				p.lineTo = function() {
+					function isInview(point) {
+						//console.log(point);
+						//console.log(p.params.pageXY.pageX);
+						//debugger
+						return Math.abs(point.x - p.params.pageXY.pageX) < p.params.mouseDis && Math.abs(point.y - p.params.pageXY.pageY) < p.params.mouseDis;
+					}
+					function lineColor(p1, p2) {
+						var linear = p.ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+						linear.addColorStop(0, p1.color.rgba);
+						linear.addColorStop(1, p2.color.rgba);
+						return linear;
+					}
+
+					for(var i = 0, len = p.points.length; i < len; i++) {
+						for(var j = 0; j < len; j++) {
+							var p1 = p.points[i];
+							var p2 = p.points[j];
+							if(isInview(p1) && isInview(p2) && Math.abs(p1.x - p2.x) < p.params.minDis && Math.abs(p1.y - p2.y) < p.params.minDis) {
+								p.ctx.beginPath();
+								p.ctx.lineWidth = 0.2;
+								p.ctx.strokeStyle = lineColor(p1, p2);
+								p.ctx.moveTo(p1.x, p1.y);
+								p.ctx.lineTo(p2.x, p2.y);
+								p.ctx.stroke();
+								p.ctx.closePath();
+							}
+						}
+					}
+				}
+				p.animation = function() {
+					p.ctx.clearRect(0, 0, p.width, p.height);
+					p.drawBackground();
+					for(var i = 0, len = p.points.length; i < len; i++) {
+						var point = p.points[i];
+						if(point.x < 0 || point.x > p.width) {
+							point.vx = -point.vx;
+						}
+						if(point.y < 0 || point.y > p.height) {
+							point.vy = -point.vy;
+						} 
+						point.x += point.vx;
+						point.y += point.vy;
+						p.ctx.beginPath();
+						p.ctx.fillStyle = point.color.rgba;
+						p.ctx.arc(point.x, point.y, point.r, 0, 2 * Math.PI, true);
+						p.ctx.fill();
+						p.ctx.closePath();
+					}
+					//p.connect();
+					p.lineTo();
+					requestAnimationFrame(p.animation);
+				}
+				p.mouseEvent = function() {
+					p.overlap.addEventListener('mousemove', function(e) {
+						var pageX = e.pageX - this.offsetLeft;
+						var pageY = e.pageY - this.offsetTop;
+
+						p.params.pageXY.pageX = pageX;
+						p.params.pageXY.pageY = pageY;
+					}, false);
+					p.overlap.addEventListener('mouseout', function(e) {
+						p.params.pageXY.pageX = p.width / 2;
+						p.params.pageXY.pageY = p.height / 2;
+					}, false)
+				}
+				p.init();
+			}
+			var particle = new Particle();
+		}();
+		</script>
+</body>
+</html>
