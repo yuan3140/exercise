@@ -1,0 +1,11 @@
+* {
+	margin: 0;
+}
+body {
+	font-size: 13px;
+}
+
+.main {
+	margin: 0 auto;
+	width: 200px;
+}

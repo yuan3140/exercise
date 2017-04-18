@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+</head>
+<body>
+	<canvas id="canvas">
+	
+	</canvas>
+	<script>
+(function() {
+	var canvas = document.querySelector('#canvas');
+	var params = {
+		width: 200,
+		height: 200,
+		ocRadius: 80,
+		ocWidth: 20,
+		icRadius: 50,
+		icWidth: 5
+	}
+	canvas.width = params.width; 
+	canvas.height = params.height;
+		var ctx = canvas.getContext('2d');
+		var x = params.width / 2;
+		var y = params.height / 2;
+		ctx.arc(x, y, params.ocRadius, 0, Math.PI * 2, false);
+		ctx.strokeStyle = "#666";
+		ctx.lineWidth = params.ocWidth;
+		ctx.stroke();
+		ctx.closePath();
+		ctx.beginPath();
+		ctx.arc(x, y, params.icRadius, 0, Math.PI * 2, false);
+})();
+
+	</script>
+</body>
+</html>

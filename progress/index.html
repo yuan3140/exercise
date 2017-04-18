@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="progress">
+<head>
+	<meta charset="UTF-8">
+	<title>progress</title>
+	<link rel="stylesheet" href="style.css">
+	<script src="./angular.js"></script>
+
+</head>
+<body>
+	<div class="main" ng-controller="progressCtrl">
+		<div load-progress progress-module="progressValue"></div>
+		<button ng-click="start()">开始</button>
+	</div>
+	<script>
+		var progress = angular.module('progress', ['loadProgress']);
+		var loadProgress = angular.module('loadProgress', []);
+		loadProgress.directive('loadProgress', function() {
+			return {
+				replace: true,
+				compile: function(element, attrs, transclude) {
+					var paramsObj = {
+						width: 200,
+						height: 200,
+						ocWidth: 20,
+						icWidth: 5,
+						ocRadius: 80,
+						icRadius: 50,
+						bgColor: '#666',
+						fColor: '#eee',
+						font: '30pt Arial'
+					};
+
+					if(element.length === 1) {
+						var node = element[0];
+
+						var canvas = document.createElement('canvas');
+						canvas.setAttribute('width', paramsObj.width);
+						canvas.setAttribute('height', paramsObj.height);
+						canvas.setAttribute('progress-module', node.getAttribute('progress-module'));
+						node.parentNode.replaceChild(canvas, node);
+
+						return {
+							pre: function(scope, instanceElement, instanceAttri, controller) {
+								var expression = canvas.getAttribute('progress-module');
+								scope.$watch(expression, function(newValue, oldValue) {
+									var ctx = canvas.getContext('2d');
+									var width = paramsObj.width;
+									var height = paramsObj.height;
+									var x = width / 2;
+									var y = height / 2;
+									ctx.clearRect(0, 0, width, height);
+
+									ctx.beginPath();
+									ctx.arc(x, y, paramsObj.ocRadius, 0, Math.PI * 2, false);
+									ctx.strokeStyle = paramsObj.bgColor;
+									ctx.lineWidth = paramsObj.ocWidth;
+									ctx.stroke();
+									
+									ctx.beginPath();
+									ctx.arc(x, y, paramsObj.icRadius, 0, Math.PI * 2, false);
+									ctx.strokeStyle = paramsObj.bgColor;
+									ctx.lineWidth = paramsObj.icWidth;
+									ctx.stroke();
+									
+									ctx.font = paramsObj.font;
+									ctx.textAlign = 'center';
+									ctx.textBaseLine = 'middle';
+									ctx.fillStyle = paramsObj.fColor;
+									ctx.fillText(newValue.label, x, y);
+
+									var startAngle = -(Math.PI / 2);
+									var endAngle = (Math.PI * 2) * newValue.percentage - (Math.PI / 2);
+									ctx.beginPath();
+									ctx.arc(x, y, paramsObj.ocRadius, startAngle, endAngle, false);
+									ctx.strokeStyle = paramsObj.fColor;
+									ctx.lineWidth = paramsObj.ocWidth;
+									ctx.stroke();
+
+									ctx.beginPath();
+									ctx.arc(x, y, paramsObj.icRadius, startAngle, endAngle, false);
+									ctx.strokeStyle = paramsObj.fColor;
+									ctx.lineWidth = paramsObj.icWidth;
+									ctx.stroke();
+
+								}, true);
+							}
+						}
+					}
+				}
+			}
+		});
+		progress.controller('progressCtrl', ['$scope', '$interval', function($scope, $interval) {
+			$scope.progressValue = {
+				label: 0,
+				percentage: 0.00
+			}
+			$scope.$watch('progressValue', function(newValue, oldValue) {
+				newValue.percentage = newValue.label / 100;
+			}, true);
+			$scope.start = function() {
+				var i = 0;
+				var timeID;
+				timeID = $interval(function(){
+					i++;
+					$scope.progressValue.label = i;
+					if(i >= 100) {
+						$interval.cancel(timeID);
+					}
+				}, 500);
+			}
+		}]);
+	</script>
+</body>
+</html>
